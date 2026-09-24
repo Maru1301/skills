@@ -1,33 +1,36 @@
 # Personal skills
 
-Each folder under `skills/` containing `SKILL.md` is a skill. Clone or download this repository on a Windows computer, then run the installer from PowerShell in the repository folder:
+Each folder under `skills/` containing `SKILL.md` is a skill. On Windows, create directory junctions from your user-level skill directories to this checkout. After setup, `git pull` updates the linked skill files without reinstalling them.
+
+Clone this repository to a permanent local path, then run this from PowerShell in the repository folder:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\link-skills.ps1
 ```
 
-By default, skills are copied to `~/.agents/skills`. The installer copies the complete skill folder, including any `references` or other supporting files.
+By default, junctions are created in `~/.agents/skills`. Each junction points to the complete skill folder in this repository, including its `references` and other supporting files.
 
 ```powershell
-$installer = '.\install.ps1'
-powershell -NoProfile -ExecutionPolicy Bypass -File $installer -List
-powershell -NoProfile -ExecutionPolicy Bypass -File $installer -Skill orchestrate-engineering
-powershell -NoProfile -ExecutionPolicy Bypass -File $installer -Target Codex
-powershell -NoProfile -ExecutionPolicy Bypass -File $installer -Target Both
-powershell -NoProfile -ExecutionPolicy Bypass -File $installer -Destination 'D:\My Skills'
-powershell -NoProfile -ExecutionPolicy Bypass -File $installer -Update
+$linker = '.\link-skills.ps1'
+powershell -NoProfile -ExecutionPolicy Bypass -File $linker -List
+powershell -NoProfile -ExecutionPolicy Bypass -File $linker -Skill orchestrate-engineering
+powershell -NoProfile -ExecutionPolicy Bypass -File $linker -Target Codex
+powershell -NoProfile -ExecutionPolicy Bypass -File $linker -Target Both
+powershell -NoProfile -ExecutionPolicy Bypass -File $linker -Destination 'D:\My Skills'
 ```
 
 The temporary `ExecutionPolicy Bypass` setting applies only to that PowerShell process. You can omit it if your system already permits local scripts.
 
 ## Existing skills
 
-If a skill already exists in the selected destination, the installer skips it and leaves the installed copy untouched. To replace it, use `-Update`:
+If a skill is already linked to this checkout, the script leaves it alone. An existing ordinary directory or a link to another location is skipped by default. To migrate existing ordinary skill directories, use `-Migrate`:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Skill commit -Target Codex -Update
+powershell -NoProfile -ExecutionPolicy Bypass -File .\link-skills.ps1 -Target Both -Migrate
 ```
 
-An update saves the previous copy next to the installed skill as `.skill-name.backup-...`. Remove that backup yourself after confirming the new skill works. Each destination is handled separately: updating `~/.codex/skills` does not update `~/.agents/skills`, even if the same skill exists in both. Restart your agent or begin a new session if it does not immediately detect an installed skill.
+Migration moves each existing ordinary directory to `.skill-name.backup-...` beside the new junction, then creates the junction. It does not replace links pointing elsewhere. Check and remove backups yourself when ready. Each destination is handled separately.
 
-To add another skill to this repository, copy its whole folder into `skills/` and ensure it contains `SKILL.md`. The installer will discover it automatically.
+Keep the checkout at the same local path; moving it breaks the junction targets. Junctions cannot point to network shares. After `git pull`, start a new agent session if updated skill instructions are not detected immediately.
+
+To add another skill, put its whole folder in `skills/` with a `SKILL.md`, then rerun `link-skills.ps1` to create its junction.
