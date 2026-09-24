@@ -33,7 +33,7 @@ if ($Skill) {
     foreach ($name in $Skill) {
         $found = @($available | Where-Object { $_.Name -ceq $name })
         if ($found.Count -ne 1) {
-            throw "Unknown skill '$name'. Run .\install.ps1 -List to see available skills."
+            throw "Unknown skill '$name'. Run .\link-skills.ps1 -List to see available skills."
         }
         $selected += $found[0]
     }
