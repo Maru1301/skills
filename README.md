@@ -1,6 +1,6 @@
 # Personal skills
 
-Each folder under `skills/` containing `SKILL.md` is a skill. On Windows, create directory junctions from your user-level skill directories to this checkout. After setup, `git pull` updates the linked skill files without reinstalling them.
+Each folder under `skills/` containing `SKILL.md` is a skill. On Windows, link your user-level skills directory to this repository once. After that, `git pull` updates existing skills and makes new skill folders available without rerunning a script. Codex reads user skills from `~/.agents/skills`.
 
 Clone this repository to a permanent local path, then run this from PowerShell in the repository folder:
 
@@ -8,29 +8,18 @@ Clone this repository to a permanent local path, then run this from PowerShell i
 powershell -NoProfile -ExecutionPolicy Bypass -File .\link-skills.ps1
 ```
 
-By default, junctions are created in `~/.agents/skills`. Each junction points to the complete skill folder in this repository, including its `references` and other supporting files.
+The script creates a directory junction from `~/.agents/skills` to this repo's `skills/` directory. It does not change `~/.codex/skills` or its managed `.system` folder. The temporary `ExecutionPolicy Bypass` setting applies only to that PowerShell process.
+
+## Existing skills directory
+
+If `~/.agents/skills` is already a junction to this repo, the script leaves it alone. If it is an ordinary directory, the script skips it by default. To migrate it, run:
 
 ```powershell
-$linker = '.\link-skills.ps1'
-powershell -NoProfile -ExecutionPolicy Bypass -File $linker -List
-powershell -NoProfile -ExecutionPolicy Bypass -File $linker -Skill orchestrate-engineering
-powershell -NoProfile -ExecutionPolicy Bypass -File $linker -Target Codex
-powershell -NoProfile -ExecutionPolicy Bypass -File $linker -Target Both
-powershell -NoProfile -ExecutionPolicy Bypass -File $linker -Destination 'D:\My Skills'
+powershell -NoProfile -ExecutionPolicy Bypass -File .\link-skills.ps1 -Migrate
 ```
 
-The temporary `ExecutionPolicy Bypass` setting applies only to that PowerShell process. You can omit it if your system already permits local scripts.
+Migration moves the existing directory to a sibling `.skills.backup-...` folder, then creates the junction. Review and remove the backup yourself when ready. A link pointing elsewhere is never replaced automatically.
 
-## Existing skills
+For another tool with a different skills directory, specify its path with `-Destination`. Keep this checkout at the same local path, because moving it breaks the junction. Windows junctions cannot target network shares.
 
-If a skill is already linked to this checkout, the script leaves it alone. An existing ordinary directory or a link to another location is skipped by default. To migrate existing ordinary skill directories, use `-Migrate`:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\link-skills.ps1 -Target Both -Migrate
-```
-
-Migration moves each existing ordinary directory to `.skill-name.backup-...` beside the new junction, then creates the junction. It does not replace links pointing elsewhere. Check and remove backups yourself when ready. Each destination is handled separately.
-
-Keep the checkout at the same local path; moving it breaks the junction targets. Junctions cannot point to network shares. After `git pull`, start a new agent session if updated skill instructions are not detected immediately.
-
-To add another skill, put its whole folder in `skills/` with a `SKILL.md`, then rerun `link-skills.ps1` to create its junction.
+To add a skill, put its whole folder in `skills/` with a `SKILL.md` and commit it. On another computer, `git pull` is enough to update the linked directory. Start a new Codex session if a newly added or changed skill does not appear immediately.
